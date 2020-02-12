@@ -1,0 +1,114 @@
+---
+output: html_document
+---
+#### OUtMATCH Weekly Screening Update
+#### PI: Wayne Shreffler
+#### Report date: `r format(Sys.Date(), format="%d-%B-%Y")`
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list=ls())
+graphics.off()
+
+library(readxl)
+library(Hmisc)
+library(xtable)
+library(tables)
+library(dplyr)
+library(data.table)
+library(pander)
+library(tidyr)
+library(stringr)
+export.date <- format(Sys.Date(), format="%d-%B-%Y")
+setwd("~/Dropbox (Partners HealthCare)/Projects/COFAR/1_OUTMATCH- SPID 1469/Logs/Screening log/")
+screen.data <- read_excel("OUtMATCH Screening log_FULL-source.xlsx")
+num_wave1 <- sum(screen.data$wave == 1, na.rm = TRUE)
+num_wave2 <- sum(screen.data$wave == 2, na.rm = TRUE)
+num_randomized <- sum(tolower(screen.data$Disposition) == "randomized", na.rm = TRUE)
+num_enrolled <- sum(!is.na(screen.data$Study.ID))
+num_screening <- sum(tolower(screen.data$Disposition) == "in screening", na.rm = TRUE)
+num_scheduled_for_screen <- sum(tolower(screen.data$Disposition) == "screen scheduled", na.rm = TRUE)
+num_prescreen_fail <- sum(tolower(screen.data$Disposition) == "ineligible - prescreen", na.rm = TRUE)
+num_screen_fail <- sum(tolower(screen.data$Disposition) == "ineligible - screen fail", na.rm = TRUE)
+num_lost <- sum(tolower(screen.data$Disposition) == "no longer interested" | tolower(screen.data$Disposition) == "lost to follow up", na.rm = TRUE) 
+num_fresh_contacts <- sum(as.Date(screen.data$First.contact, format = "%Y-%m-%d") > (as.Date(Sys.Date(), format = "%Y-%m-%d") - 7), na.rm = TRUE)
+num_active <- sum(grepl("active", screen.data$Disposition))
+
+## clean and organize 'Qualifying.Allergens' variable
+screen.data$Qualifying.Allergens <- tolower(screen.data$Qualifying.Allergens)
+screen.data$Disposition <- tolower(screen.data$Disposition)
+screen.data$Qualifying.Allergens <- lapply(screen.data$Qualifying.Allergens, function(x) gsub("\\?", "", x))
+screen.data$Qualifying.Allergens <- lapply(screen.data$Qualifying.Allergens, function(x) tolower(x))
+screen.data$Peanut.sIgE <- as.numeric(lapply(screen.data$Peanut.sIgE, function(x) gsub(">=", "", x)))
+```
+
+#### Overview
+
+We have pre-screened a total of `r dim(screen.data)[1]` candidates who have actively expressed interest (see Table 1 for overall demographics). `r sum(num_wave1, num_wave2)` have confirmed strong interest following study staff review of study overview and are reviewing the ICF and other recruitment materials.
+
+
+Of these candidates, `r num_enrolled` have enrolled, `r num_scheduled_for_screen` are currently scheduled between now and `r format(max(screen.data$Screen.date, na.rm = TRUE), format = "%d-%B-%Y")`, `r num_randomized` have been randomized. 
+
+`r num_prescreen_fail` have been deemed ineligible from pre-screening (i.e., prior to enrollment, see Table 2 below for details), `r num_screen_fail` screen failed (i.e., subsequent to enrollment, see Table 3 below for details), and `r num_lost` have declined or are now regarded as lost to follow up (after multiple attempts to contact). 
+
+That leaves us `r num_active` who remain in the active screening pool (see Table 4 below for details), `r num_fresh_contacts` of whom are new contacts in the past week. 
+
+
+#### Table 1. Summary data entire pre-screen pool
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary.table <- screen.data %>% summarize(n=n(), age.25th=fivenum(Age, na.rm = TRUE)[2], age.median = median(Age, na.rm = TRUE), age.75th = fivenum(Age, na.rm = TRUE)[3], perc.Male = round(sum(screen.data$Gender == "M", na.rm = TRUE) / length(screen.data$Gender) * 100), milk = sum(grepl("milk", screen.data$Qualifying.Allergens)), egg = sum(grepl("egg", screen.data$Qualifying.Allergens)), wheat = sum(grepl("wheat", screen.data$Qualifying.Allergens)), cashew = sum(grepl("cashew", screen.data$Qualifying.Allergens)), hazelnut = sum(grepl("hazel", screen.data$Qualifying.Allergens)), walnut = sum(grepl("walnut", screen.data$Qualifying.Allergens)), pn.IgE.25th = fivenum(screen.data$Peanut.sIgE, na.rm = TRUE)[2], pn.IgE.median = fivenum(screen.data$Peanut.sIgE, na.rm = TRUE)[3], pn.IgE.75th = fivenum(screen.data$Peanut.sIgE, na.rm = TRUE)[4])
+
+
+formatted.table1 <- xtable(caption=paste("Summary of pre-screen subject information as of", export.date, " "), summary.table, digits = 0, label="tab1")
+align(formatted.table1) <- "ccccccccccccccc"
+# for html, use following line of code
+#print(formatted.table2A, caption.placement = "top", include.rownames=FALSE, type='html')
+#for word, use following line of code and uncomment the line above
+pander(formatted.table1, split.table = Inf)
+```
+
+#### Table 2. Summary data pre-screen fail
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary.table2 <- screen.data %>% 
+  filter(Disposition == "ineligible - prescreen" | Disposition == "no longer interested") %>%
+  group_by(Screen.Fail.Reason) %>%
+  summarize(n=n(), age.25th=fivenum(Age, na.rm = TRUE)[2], age.median = median(Age, na.rm = TRUE), age.75th = fivenum(Age, na.rm = TRUE)[3], perc.Male = round(sum(Gender == "M", na.rm = TRUE) / length(Gender) * 100), milk = sum(grepl("milk", Qualifying.Allergens)), egg = sum(grepl("egg", Qualifying.Allergens)), wheat = sum(grepl("wheat", Qualifying.Allergens)), cashew = sum(grepl("cashew", Qualifying.Allergens)), hazelnut = sum(grepl("hazel", Qualifying.Allergens)), walnut = sum(grepl("walnut", Qualifying.Allergens)), pn.IgE.25th = fivenum(Peanut.sIgE, na.rm = TRUE)[2], pn.IgE.median = fivenum(Peanut.sIgE, na.rm = TRUE)[3], pn.IgE.75th = fivenum(Peanut.sIgE, na.rm = TRUE)[4])
+
+
+formatted.table2 <- xtable(caption=paste("Summary of pre-screen fails", export.date, " "), summary.table2, digits = 0, label="tab2")
+align(formatted.table2) <- "cccccccccccccccc"
+# for html, use following line of code
+#print(formatted.table2A, caption.placement = "top", include.rownames=FALSE, type='html')
+#for word, use following line of code and uncomment the line above
+pander(formatted.table2, split.table = Inf)
+```
+
+#### Table 3. Summary data post-screen fail
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary.table3 <- screen.data %>% 
+  filter(Disposition == "ineligible - screen fail") %>%
+  group_by(Screen.Fail.Reason) %>%
+  summarize(n=n(), age.25th=fivenum(Age, na.rm = TRUE)[2], age.median = median(Age, na.rm = TRUE), age.75th = fivenum(Age, na.rm = TRUE)[3], perc.Male = round(sum(Gender == "M", na.rm = TRUE) / length(Gender) * 100), milk = sum(grepl("milk", Qualifying.Allergens)), egg = sum(grepl("egg", Qualifying.Allergens)), wheat = sum(grepl("wheat", Qualifying.Allergens)), cashew = sum(grepl("cashew", Qualifying.Allergens)), hazelnut = sum(grepl("hazel", Qualifying.Allergens)), walnut = sum(grepl("walnut", Qualifying.Allergens)), pn.IgE.25th = fivenum(Peanut.sIgE, na.rm = TRUE)[2], pn.IgE.median = fivenum(Peanut.sIgE, na.rm = TRUE)[3], pn.IgE.75th = fivenum(Peanut.sIgE, na.rm = TRUE)[4])
+
+
+formatted.table3 <- xtable(caption=paste("Summary of post-screen fails", export.date, " "), summary.table3, digits = 0, label="tab3")
+align(formatted.table3) <- "cccccccccccccccc"
+# for html, use following line of code
+#print(formatted.table2A, caption.placement = "top", include.rownames=FALSE, type='html')
+#for word, use following line of code and uncomment the line above
+pander(formatted.table3, split.table = Inf)
+```
+
+#### Table 4. Summary data active pool
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary.table4 <- screen.data %>% 
+  filter(grepl("active", Disposition)) %>%
+  summarize(n=n(), age.25th=fivenum(Age, na.rm = TRUE)[2], age.median = median(Age, na.rm = TRUE), age.75th = fivenum(Age, na.rm = TRUE)[3], perc.Male = round(sum(Gender == "M", na.rm = TRUE) / length(Gender) * 100), milk = sum(grepl("milk", Qualifying.Allergens)), egg = sum(grepl("egg", Qualifying.Allergens)), wheat = sum(grepl("wheat", Qualifying.Allergens)), cashew = sum(grepl("cashew", Qualifying.Allergens)), hazelnut = sum(grepl("hazel", Qualifying.Allergens)), walnut = sum(grepl("walnut", Qualifying.Allergens)), pn.IgE.25th = fivenum(Peanut.sIgE, na.rm = TRUE)[2], pn.IgE.median = fivenum(Peanut.sIgE, na.rm = TRUE)[3], pn.IgE.75th = fivenum(Peanut.sIgE, na.rm = TRUE)[4])
+
+
+formatted.table4 <- xtable(caption=paste("Summary of post-screen fails", export.date, " "), summary.table4, digits = 0, label="tab4")
+align(formatted.table4) <- "ccccccccccccccc"
+# for html, use following line of code
+#print(formatted.table2A, caption.placement = "top", include.rownames=FALSE, type='html')
+#for word, use following line of code and uncomment the line above
+pander(formatted.table4, split.table = Inf)
+```
