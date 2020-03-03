@@ -8,16 +8,16 @@ output: html_document
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 rm(list=ls())
 graphics.off()
+if(!require("readxl")) install.packages("readxl")
+if(!require("Hmisc")) install.packages("Hmisc")
+if(!require("xtable")) install.packages("xtable")
+if(!require("tables")) install.packages("tables")
+if(!require("dplyr")) install.packages("dplyr")
+if(!require("data.table")) install.packages("data.table")
+if(!require("pander")) install.packages("pander")
+if(!require("tidyr")) install.packages("tidyr")
+if(!require("stringr")) install.packages("stringr")
 
-library(readxl)
-library(Hmisc)
-library(xtable)
-library(tables)
-library(dplyr)
-library(data.table)
-library(pander)
-library(tidyr)
-library(stringr)
 export.date <- format(Sys.Date(), format="%d-%B-%Y")
 setwd("~/Dropbox (Partners HealthCare)/Projects/COFAR/1_OUTMATCH- SPID 1469/Logs/Screening log/")
 screen.data <- read_excel("OUtMATCH Screening log_FULL-source.xlsx")
@@ -47,11 +47,11 @@ Our site was activated on 14-January-2020.
 We have pre-screened a total of `r dim(screen.data)[1]` candidates who have actively expressed interest (see Table 1 for overall demographics). `r num_prescreen_fail` have been deemed ineligible from pre-screening (i.e., prior to enrollment, see Table 2 below for details) and `r num_lost` have declined or are lost to follow up (after multiple attempts to contact). `r sum(num_reviewing)` have confirmed strong interest following study staff review of study overview and are reviewing the ICF/other recruitment materials.
 
 
-`r num_enrolled` have been enrolled (signed ICF), `r num_screening` of whom are going through screening now to determine eligibility see Table 3 for details), `r num_screen_fail` have screen failed (i.e., subsequent to enrollment, see Table 4 below for details) and `r num_randomized` have been randomized.
+`r num_enrolled` have been enrolled (signed ICF), `r num_screening` of whom are going through screening now to determine eligibility (see Table 3 for details), `r num_screen_fail` have screen failed (i.e., subsequent to enrollment, see Table 4 below for details) and `r num_randomized` have been randomized.
 
 `r num_scheduled_for_screen` are currently scheduled for initial screening between now and `r format(max(screen.data$Screen.date, na.rm = TRUE), format = "%d-%B-%Y")`.
 
-`r num_active` remain in the active candidate screening pool (see Table 4 below for details), `r num_fresh_contacts` of whom are new contacts in the past two weeks. 
+`r num_active` remain in the active candidate screening pool (see Table 5 below for details), `r num_fresh_contacts` of whom are new contacts in the past two weeks. 
 
 
 #### Table 1. Summary data entire pre-screen pool
