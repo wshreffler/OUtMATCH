@@ -21,7 +21,6 @@ if(!require("stringr")) install.packages("stringr")
 export.date <- format(Sys.Date(), format="%d-%B-%Y")
 setwd("~/Dropbox (Partners HealthCare)/Projects/COFAR/1_OUTMATCH- SPID 1469/Logs/Screening log/")
 screen.data <- read_excel("OUtMATCH Screening log_FULL-source.xlsx")
-num_reviewing <- sum(as.numeric(lapply(screen.data$First.contact, function(x) sum(!is.na(x)))))
 num_randomized <- sum(tolower(screen.data$Disposition) == "randomized", na.rm = TRUE)
 num_enrolled <- sum(!is.na(screen.data$Study.ID))
 num_screening <- sum(tolower(screen.data$Disposition) == "in screening", na.rm = TRUE)
@@ -31,6 +30,7 @@ num_screen_fail <- sum(tolower(screen.data$Disposition) == "ineligible - screen 
 num_lost <- sum(tolower(screen.data$Disposition) == "no longer interested" | tolower(screen.data$Disposition) == "lost to follow up", na.rm = TRUE) 
 num_fresh_contacts <- sum(as.Date(screen.data$date.added, format = "%Y-%m-%d") > (as.Date(Sys.Date(), format = "%Y-%m-%d") - 14), na.rm = TRUE)
 num_active <- sum(grepl("active", screen.data$Disposition))
+num_reviewing <- sum(as.numeric(lapply(screen.data$First.contact, function(x) sum(!is.na(x))))) - (num_prescreen_fail + num_screen_fail)
 
 ## clean and organize 'Qualifying.Allergens' variable
 screen.data$Qualifying.Allergens <- tolower(screen.data$Qualifying.Allergens)
@@ -44,7 +44,7 @@ screen.data$Peanut.sIgE <- as.numeric(lapply(screen.data$Peanut.sIgE, function(x
 
 Our site was activated on 14-January-2020.
 
-We have pre-screened a total of `r dim(screen.data)[1]` candidates who have actively expressed interest (see Table 1 for overall demographics). `r num_prescreen_fail` have been deemed ineligible from pre-screening (i.e., prior to enrollment, see Table 2 below for details) and `r num_lost` have declined or are lost to follow up (after multiple attempts to contact). `r sum(num_reviewing)` have confirmed strong interest following study staff review of study overview and are reviewing the ICF/other recruitment materials.
+We have pre-screened a total of `r dim(screen.data)[1]` candidates who have actively expressed interest (see Table 1 for overall demographics). `r num_prescreen_fail` have been deemed ineligible from pre-screening (i.e., prior to enrollment, see Table 2 below for details) and `r num_lost` have declined or are lost to follow up (after multiple attempts to contact).
 
 
 `r num_enrolled` have been enrolled (signed ICF), `r num_screening` of whom are going through screening now to determine eligibility (see Table 3 for details), `r num_screen_fail` have screen failed (i.e., subsequent to enrollment, see Table 4 below for details) and `r num_randomized` have been randomized.
@@ -115,7 +115,7 @@ align(formatted.table4) <- "cccccccccccccccc"
 pander(formatted.table4, split.table = Inf)
 ```
 
-#### Table 5. Summary data active pool
+#### Table 5. Summary data active recruitment pool
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 summary.table5 <- screen.data %>% 
   filter(grepl("active", Disposition)) %>%
