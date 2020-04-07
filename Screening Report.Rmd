@@ -104,7 +104,7 @@ pander(formatted.table3, split.table = Inf)
 summary.table4 <- screen.data %>% 
   filter(Disposition == "ineligible - screen fail") %>%
   group_by(Screen.Fail.Reason) %>%
-  summarize(n=n(), age.25th=fivenum(Age, na.rm = TRUE)[2], age.median = median(Age, na.rm = TRUE), age.75th = fivenum(Age, na.rm = TRUE)[3], perc.Male = round(sum(Gender == "M", na.rm = TRUE) / length(Gender) * 100), milk = sum(grepl("milk", Qualifying.Allergens)), egg = sum(grepl("egg", Qualifying.Allergens)), wheat = sum(grepl("wheat", Qualifying.Allergens)), cashew = sum(grepl("cashew", Qualifying.Allergens)), hazelnut = sum(grepl("hazel", Qualifying.Allergens)), walnut = sum(grepl("walnut", Qualifying.Allergens)), pn.IgE.25th = fivenum(Peanut.sIgE, na.rm = TRUE)[2], pn.IgE.median = fivenum(Peanut.sIgE, na.rm = TRUE)[3], pn.IgE.75th = fivenum(Peanut.sIgE, na.rm = TRUE)[4])
+  summarize(n=n(), age.25th=fivenum(Age, na.rm = TRUE)[2], age.median = median(Age, na.rm = TRUE), age.75th = fivenum(Age, na.rm = TRUE)[3], perc.Male = round(sum(Gender == "M", na.rm = TRUE) / length(Gender) * 100), milk = sum(grepl("milk", Qualifying.Allergens)), egg = sum(grepl("egg", Qualifying.Allergens)), wheat = sum(grepl("wheat", Qualifying.Allergens)), cashew = sum(grepl("cashew", Qualifying.Allergens)), hazelnut = sum(grepl("hazel", Qualifying.Allergens)), walnut = sum(grepl("walnut", Qualifying.Allergens)), pn.IgE.25th = fivenum(Peanut.sIgE, na.rm = TRUE)[2], pn.IgE.median = fivenum(Peanut.sIgE, na.rm = TRUE)[3], pn.IgE.75th = fivenum(Peanut.sIgE, na.rm = TRUE)[4]) 
 
 
 formatted.table4 <- xtable(caption=paste("Summary of post-screen fails", export.date, " "), summary.table4, digits = 0, label="tab4")
