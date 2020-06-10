@@ -29,7 +29,8 @@ num_prescreen_fail <- sum(tolower(screen.data$Disposition) == "ineligible - pres
 num_screen_fail <- sum(tolower(screen.data$Disposition) == "ineligible - screen fail", na.rm = TRUE)
 num_lost <- sum(tolower(screen.data$Disposition) == "no longer interested" | tolower(screen.data$Disposition) == "lost to follow up", na.rm = TRUE) 
 num_fresh_contacts <- sum(as.Date(screen.data$date.added, format = "%Y-%m-%d") > (as.Date(Sys.Date(), format = "%Y-%m-%d") - 14), na.rm = TRUE)
-num_active <- sum(grepl("active", screen.data$Disposition))
+num_active <- sum(grepl("active", screen.data$Disposition) | grepl("to be scheduled", screen.data$Disposition))
+num_TB_scheduled <- sum(grepl("to be scheduled", screen.data$Disposition))
 num_reviewing <- sum(as.numeric(lapply(screen.data$First.contact, function(x) sum(!is.na(x))))) - (num_prescreen_fail + num_screen_fail)
 
 ## clean and organize 'Qualifying.Allergens' variable
@@ -52,6 +53,8 @@ We have pre-screened a total of `r dim(screen.data)[1]` candidates who have acti
 `r num_scheduled_for_screen` are currently scheduled for initial screening between now and `r format(max(screen.data$Screen.date, na.rm = TRUE), format = "%d-%B-%Y")`.
 
 `r num_active` remain in the active candidate screening pool (see Table 5 below for details), `r num_fresh_contacts` of whom are new contacts in the past two weeks. 
+
+`r num_TB_scheduled` are waiting to be scheduled for initial screening visit.
 
 
 #### Table 1. Summary data entire pre-screen pool
